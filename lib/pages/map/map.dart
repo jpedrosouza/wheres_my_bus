@@ -52,17 +52,17 @@ class _MapPageState extends State<MapPage> {
 
     getData();
 
-    // _customMarkerViewLocation = await BitmapDescriptor.fromAssetImage(
-    // ImageConfiguration(
-    //   devicePixelRatio: 2.5,
-    //   size: Size(64, 64),
-    // ),
-    // 'assets/images/bus-icon-red.png');
-
     super.initState();
   }
 
   void getData() async {
+    _customMarkerViewLocation = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(
+          devicePixelRatio: 2.5,
+          size: Size(64, 64),
+        ),
+        'assets/images/bus-icon-red.png');
+
     _firebaseDatabase
         .reference()
         .child('realtime_locations')
