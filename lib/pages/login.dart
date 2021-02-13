@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wheres_my_bus/utils/auth.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -6,6 +7,31 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  var formLogin = GlobalKey<FormState>();
+
+  String email, password;
+  bool loginLoading = false;
+
+  void validateAndLogin() async {
+    setState(() {
+      loginLoading = true;
+    });
+
+    if (formLogin.currentState.validate()) {
+      if (await Auth().signIn(email, password)) {
+        Navigator.popAndPushNamed(context, '/home');
+      } else {
+        setState(() {
+          loginLoading = false;
+        });
+      }
+    } else {
+      setState(() {
+        loginLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,68 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 80, left: 20, right: 20),
-                  child: Form(
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          autocorrect: false,
-                          // onSaved: (newValue) => _email = newValue,
-                          validator: (value) =>
-                              value.isEmpty ? 'Informe seu email.' : null,
-                          decoration: InputDecoration(
-                            hintText: 'Email...',
-                            hintStyle: TextStyle(color: Colors.white),
-                            fillColor: Colors.white,
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Colors.white,
-                                width: 2.0,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Colors.white,
-                                  width: 2.0,
-                                ),
-                                borderRadius: BorderRadius.circular(10)),
-                          ),
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(top: 20),
-                          child: TextFormField(
-                            autocorrect: false,
-                            // onSaved: (newValue) => _email = newValue,
-                            obscureText: true,
-                            validator: (value) =>
-                                value.isEmpty ? 'Informe sua senha.' : null,
-                            decoration: InputDecoration(
-                              hintText: 'Senha...',
-                              hintStyle: TextStyle(color: Colors.white),
-                              fillColor: Colors.white,
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Colors.white,
-                                  width: 2.0,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Colors.white,
-                                    width: 2.0,
-                                  ),
-                                  borderRadius: BorderRadius.circular(10)),
-                            ),
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                            keyboardType: TextInputType.visiblePassword,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: formLoginWidget(),
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 40),
@@ -112,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      onPressed: () => Navigator.pushNamed(context, '/home'),
+                      onPressed: () => validateAndLogin(),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18.0),
                       ),
@@ -155,6 +120,70 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 )
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget formLoginWidget() {
+    return Form(
+      key: formLogin,
+      child: Column(
+        children: [
+          TextFormField(
+            autocorrect: false,
+            onChanged: (newValue) => email = newValue,
+            validator: (value) => value.isEmpty ? 'Informe seu email.' : null,
+            decoration: InputDecoration(
+              hintText: 'Email...',
+              hintStyle: TextStyle(color: Colors.white),
+              fillColor: Colors.white,
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.white,
+                  width: 2.0,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                    width: 2.0,
+                  ),
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            style: TextStyle(fontSize: 16, color: Colors.white),
+            keyboardType: TextInputType.emailAddress,
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 20),
+            child: TextFormField(
+              autocorrect: false,
+              onChanged: (newValue) => password = newValue,
+              obscureText: true,
+              validator: (value) => value.isEmpty ? 'Informe sua senha.' : null,
+              decoration: InputDecoration(
+                hintText: 'Senha...',
+                hintStyle: TextStyle(color: Colors.white),
+                fillColor: Colors.white,
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                    width: 2.0,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.white,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              style: TextStyle(fontSize: 16, color: Colors.white),
+              keyboardType: TextInputType.visiblePassword,
             ),
           ),
         ],

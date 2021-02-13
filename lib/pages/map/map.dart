@@ -1,8 +1,9 @@
 import 'dart:async';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapPage extends StatefulWidget {
@@ -11,84 +12,115 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  FirebaseDatabase _firebaseDatabase = FirebaseDatabase.instance;
+
+  Geolocator _geolocator = Geolocator()..forceAndroidLocationManager;
   GoogleMapController _googleMapController;
   Completer<GoogleMapController> _controller = Completer();
   BitmapDescriptor _customMarkerViewLocation;
-  Location location = new Location();
-  PermissionStatus _permissionGranted;
+
+  List<Polyline> polyline = <Polyline>[
+    Polyline(
+      polylineId: PolylineId('camboriu-itajai-route'),
+      width: 3,
+      points: [
+        LatLng(-26.996793, -48.633630),
+        LatLng(-26.997831, -48.632733),
+        LatLng(-26.994374, -48.627583),
+        LatLng(-26.993652, -48.628169),
+        LatLng(-26.992385, -48.628802),
+        LatLng(-26.990961, -48.629113),
+        LatLng(-26.989988, -48.629593),
+        LatLng(-26.989603, -48.629789),
+      ],
+      color: Color(0XFFF7B731),
+    )
+  ];
 
   List<Marker> markers = <Marker>[];
 
   String _mapStyle;
-  bool _serviceEnabled;
+  String lat, lng;
 
   @override
   initState() {
+    _geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+
     rootBundle.loadString('assets/style/map_night_style.txt').then((string) {
       _mapStyle = string;
     });
 
-    getPermission();
+    getData();
+
+    // _customMarkerViewLocation = await BitmapDescriptor.fromAssetImage(
+    // ImageConfiguration(
+    //   devicePixelRatio: 2.5,
+    //   size: Size(64, 64),
+    // ),
+    // 'assets/images/bus-icon-red.png');
+
     super.initState();
   }
 
-  Future getPermission() async {
-    _customMarkerViewLocation = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(
-          devicePixelRatio: 2.5,
-          size: Size(64, 64),
-        ),
-        'assets/images/bus-icon-red.png');
+  void getData() async {
+    _firebaseDatabase
+        .reference()
+        .child('realtime_locations')
+        .onChildChanged
+        .listen((snapshot) {
+      if (snapshot.snapshot.value.isNotEmpty) {
+        lat = snapshot.snapshot.value['lat'].toString();
+        lng = snapshot.snapshot.value['lng'].toString();
 
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        return;
+        setState(() {
+          markers.add(Marker(
+              markerId:
+                  MarkerId(snapshot.snapshot.value['driver_id'].toString()),
+              position: LatLng(double.parse(lat), double.parse(lng)),
+              icon: _customMarkerViewLocation));
+        });
       }
-    }
-
-    setState(() {
-      markers.add(Marker(
-          markerId: MarkerId('praiana-578'),
-          position: LatLng(-26.9905955, -48.6288739),
-          icon: _customMarkerViewLocation));
     });
-
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          'Mapa',
+          style: TextStyle(
+            color: Color(0XFFF7B731),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         backgroundColor: Color(0XFF3867D6),
       ),
       body: Stack(
         children: [
-          GoogleMap(
-            onMapCreated: (GoogleMapController googleMapController) {
-              _googleMapController = googleMapController;
-              _googleMapController.setMapStyle(_mapStyle);
-              _controller.complete(googleMapController);
-            },
-            initialCameraPosition: CameraPosition(
-              target: LatLng(-26.9905955, -48.6288739),
-              zoom: 13.000,
-            ),
-            mapType: MapType.normal,
-            myLocationEnabled: true,
-            rotateGesturesEnabled: false,
-            markers: markers.toSet(),
-          )
+          map(),
         ],
       ),
+    );
+  }
+
+  Widget map() {
+    return GoogleMap(
+      onMapCreated: (GoogleMapController googleMapController) {
+        _googleMapController = googleMapController;
+        _googleMapController.setMapStyle(_mapStyle);
+        _controller.complete(googleMapController);
+      },
+      initialCameraPosition: CameraPosition(
+        target: LatLng(-26.9905955, -48.6288739),
+        zoom: 13.000,
+      ),
+      mapType: MapType.normal,
+      myLocationEnabled: true,
+      rotateGesturesEnabled: false,
+      markers: markers.toSet(),
+      polylines: polyline.toSet(),
     );
   }
 }

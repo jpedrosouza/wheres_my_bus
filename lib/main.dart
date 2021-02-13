@@ -1,6 +1,8 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:wheres_my_bus/pages/forgot_password.dart';
 import 'package:wheres_my_bus/pages/home/home.dart';
+import 'package:wheres_my_bus/pages/loading_page.dart';
 import 'package:wheres_my_bus/pages/login.dart';
 import 'package:wheres_my_bus/pages/map/map.dart';
 import 'package:wheres_my_bus/pages/register.dart';
@@ -28,7 +30,23 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomePage(),
         '/map': (context) => MapPage(),
       },
-      home: LoginPage(),
+      home: FutureBuilder(
+        future: Firebase.initializeApp(),
+        builder: (context, snapshot) {
+          // Check for errors
+          if (snapshot.hasError) {
+            return LoadingPage();
+          }
+
+          // Once complete, show your application
+          if (snapshot.connectionState == ConnectionState.done) {
+            return LoginPage();
+          }
+
+          // Otherwise, show something whilst waiting for initialization to complete
+          return LoadingPage();
+        },
+      ),
     );
   }
 }
