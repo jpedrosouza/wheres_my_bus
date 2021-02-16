@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:wheres_my_bus/database/models/user.model.dart';
+import 'package:wheres_my_bus/utils/auth.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -6,11 +8,69 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  var scaffoldKey = GlobalKey<ScaffoldState>();
+
+  var formKey = GlobalKey<FormState>();
+
+  var txtEmail = TextEditingController();
+  var txtName = TextEditingController();
+  var txtLastName = TextEditingController();
+  var txtPassword = TextEditingController();
+  var txtConfirmPassword = TextEditingController();
+
   bool checkBox = false;
+
+  void validate() async {
+    if (formKey.currentState.validate()) {
+      if (checkBox) {
+        if (txtPassword.text == txtConfirmPassword.text) {
+          var fullName = txtName.text + txtLastName.text;
+
+          UserModel userModel = UserModel(txtEmail.text, fullName);
+
+          await Auth()
+              .createUser(txtEmail.text, txtPassword.text, fullName, userModel);
+
+          Navigator.pushNamed(context, '/home');
+        } else {
+          scaffoldKey.currentState.showSnackBar(
+            SnackBar(
+              content: Text(
+                'Insira senhas iguais',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontFamily: 'Prompt',
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              backgroundColor: Colors.white,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      } else {
+        scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            content: Text(
+              'Para usar o app você usar o app é preciso concordar com os termos de uso',
+              style: TextStyle(
+                color: Colors.blue,
+                fontFamily: 'Prompt',
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            backgroundColor: Colors.white,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       backgroundColor: Color(0XFF08994D),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -24,11 +84,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 Padding(
                   padding: EdgeInsets.only(top: 20, left: 20, right: 20),
                   child: Form(
+                    key: formKey,
                     child: Column(
                       children: [
                         TextFormField(
+                          controller: txtEmail,
                           autocorrect: false,
-                          // onSaved: (newValue) => _email = newValue,
                           validator: (value) =>
                               value.isEmpty ? 'Informe seu email.' : null,
                           decoration: InputDecoration(
@@ -55,8 +116,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         Padding(
                           padding: EdgeInsets.only(top: 20),
                           child: TextFormField(
-                            autocorrect: false,
-                            // onSaved: (newValue) => _email = newValue,
+                            controller: txtName,
+                            autocorrect: true,
                             validator: (value) =>
                                 value.isEmpty ? 'Informe seu nome.' : null,
                             decoration: InputDecoration(
@@ -84,8 +145,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         Padding(
                           padding: EdgeInsets.only(top: 20),
                           child: TextFormField(
-                            autocorrect: false,
-                            // onSaved: (newValue) => _email = newValue,
+                            controller: txtLastName,
+                            autocorrect: true,
                             validator: (value) =>
                                 value.isEmpty ? 'Informe seu sobrenome.' : null,
                             decoration: InputDecoration(
@@ -113,8 +174,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         Padding(
                           padding: EdgeInsets.only(top: 20),
                           child: TextFormField(
+                            controller: txtPassword,
                             autocorrect: false,
-                            // onSaved: (newValue) => _email = newValue,
                             obscureText: true,
                             validator: (value) =>
                                 value.isEmpty ? 'Informe sua senha.' : null,
@@ -143,8 +204,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         Padding(
                           padding: EdgeInsets.only(top: 20),
                           child: TextFormField(
+                            controller: txtConfirmPassword,
                             autocorrect: false,
-                            // onSaved: (newValue) => _email = newValue,
                             obscureText: true,
                             validator: (value) =>
                                 value.isEmpty ? 'Confirme sua senha.' : null,
@@ -208,7 +269,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      onPressed: () => Navigator.pushNamed(context, '/register'),
+                      onPressed: () => validate(),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18.0),
                       ),
