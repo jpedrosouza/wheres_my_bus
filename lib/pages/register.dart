@@ -24,7 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
     if (formKey.currentState.validate()) {
       if (checkBox) {
         if (txtPassword.text == txtConfirmPassword.text) {
-          var fullName = txtName.text + txtLastName.text;
+          var fullName = txtName.text + ' ' + txtLastName.text;
 
           UserModel userModel = UserModel(txtEmail.text, fullName);
 

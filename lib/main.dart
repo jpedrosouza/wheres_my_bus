@@ -5,7 +5,11 @@ import 'package:wheres_my_bus/pages/home/home.dart';
 import 'package:wheres_my_bus/pages/loading_page.dart';
 import 'package:wheres_my_bus/pages/login.dart';
 import 'package:wheres_my_bus/pages/map/map.dart';
+import 'package:wheres_my_bus/pages/map/pages/map_options.dart';
+import 'package:wheres_my_bus/pages/my_account.dart';
+import 'package:wheres_my_bus/pages/project.dart';
 import 'package:wheres_my_bus/pages/register.dart';
+import 'package:wheres_my_bus/pages/register_driver.dart';
 
 void main() {
   runApp(MyApp());
@@ -25,10 +29,15 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Prompt',
       ),
       routes: {
+        '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
         '/forgot_password': (context) => ForgotPasswordPage(),
         '/home': (context) => HomePage(),
         '/map': (context) => MapPage(),
+        '/project': (context) => ProjectPage(),
+        '/register_driver': (context) => RegisterDriver(),
+        '/my_account': (context) => MyAccountPage(),
+        '/map_options': (context) => MapOptionsPage(),
       },
       home: FutureBuilder(
         future: Firebase.initializeApp(),

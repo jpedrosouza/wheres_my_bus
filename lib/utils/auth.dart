@@ -1,12 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:wheres_my_bus/database/models/user.model.dart';
+import 'package:wheres_my_bus/database/controller/user.controller.dart';
 
 class Auth {
   FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
-  Future<String> createUser(email, password, name, UserModel userModel) async {
+  Future<String> createUser(email, password, name, userModel) async {
     try {
       User user = (await _firebaseAuth.createUserWithEmailAndPassword(
               email: email, password: password))
@@ -15,12 +13,7 @@ class Auth {
       user.updateProfile(displayName: name);
       user.reload();
 
-      // Add User in Database.
-      await _firebaseFirestore.collection('users').add({
-        'email': userModel.email,
-        'name': userModel.name,
-        'driver': false,
-      });
+      await UserController().createUser(userModel, user.uid);
 
       return user.uid;
     } catch (e) {
